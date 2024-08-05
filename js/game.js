@@ -9,7 +9,6 @@
   const start = () => {
     const marbles = {...countBalls};
     const figures = ['камень', 'ножницы', 'бумага'];
-    const oddEven = ['нечётное', 'чётное'];
 
     const getRandomIntInclusive = (min, max) => {
       const minCeiled = Math.ceil(min);
@@ -18,6 +17,9 @@
       return Math.floor(Math.random() *
         (maxFloored - minCeiled + 1) + minCeiled);
     };
+
+    const getNumber = (marbles, number) =>
+      (marbles < number ? marbles : number);
 
     const getResultWin = (obj, func) => {
       if (obj.player <= 0) {
@@ -41,25 +43,7 @@
       return func();
     };
 
-    /* const winUser = () => {
-      alert(`Вы победили!!! У бота кончились шарики.`);
-      if (confirm('Хотите сыграть ещё ?')) {
-        return start();
-      } else {
-        return;
-      }
-    };
-
-    const winComputer = () => {
-      alert(`Вы проиграли. У вас кончились шарики.`);
-      if (confirm('Хотите сыграть ещё ?')) {
-        return start();
-      } else {
-        return;
-      }
-    }; */
-
-    const findResultArray = (userEnter, arr) => arr.find(item =>
+    const findResultArray = (userEnter) => figures.find(item =>
       item.startsWith(userEnter.toLowerCase().trim()));
 
     const showMessageGameEnd = () => alert('Игра закончена');
@@ -83,7 +67,7 @@
         }
       }
 
-      const userNumber = +userEnterBalls.trim();
+      let userNumber = +userEnterBalls.trim();
 
       if (isNaN(userNumber) || userNumber > marbles.player || userNumber <= 0) {
         alert(`Введите число больше нуля, но не больше ${marbles.player}`);
@@ -93,6 +77,7 @@
       const resultComputerChoice = getComputerChoiceOddEven(marbles);
 
       if (getResultNumberOddEven(userNumber) === resultComputerChoice) {
+        userNumber = getNumber(marbles.player, userNumber);
         marbles.player -= userNumber;
         marbles.bot += userNumber;
         alert(`Бот забирает у вас шариков: ${userNumber} \n` +
@@ -100,6 +85,7 @@
         `Общее кол-во шариков: \n У вас шариков: ${marbles.player}\n` +
         `У бота шариков: ${marbles.bot}`);
       } else {
+        userNumber = getNumber(marbles.bot, userNumber);
         marbles.bot -= userNumber;
         marbles.player += userNumber;
         alert(`Вы забираете у бота шариков: ${userNumber} \n` +
@@ -108,59 +94,33 @@
           `У бота шариков: ${marbles.bot}`);
       }
 
-      /* if (marbles.player <= 0) {
-        return winComputer();
-      } else if (marbles.bot <= 0) {
-        return winUser();
-      } else {
-        return computerPlay();
-      } */
-
       getResultWin(marbles, computerPlay);
     };
 
     const computerPlay = () => {
-      const computerBalls = getRandomIntInclusive(1, marbles.bot);
+      let computerBalls = getRandomIntInclusive(1, marbles.bot);
       console.log('computerBalls: ', computerBalls);
-      const userEnterGuess = prompt('Бот загадал число,' +
-        ' попробуйте угадать четное или нечётное');
+      const computerResultOddEven = getResultNumberOddEven(computerBalls);
+      const userEnterGuess = confirm('Бот загадал число,' +
+        ' попробуйте угадать чётное или нечётное\n' +
+        `"Ok" - чётное\n"Отмена" - нечётное`) ? 'чётное' : 'нечётное';
+      console.log('userEnterGuess: ', userEnterGuess);
 
-      if (userEnterGuess === null) {
-        if (confirm('Вы точно хотите выйти ?')) {
-          return showMessageGameEnd();
-        } else {
-          return computerPlay();
-        }
-      }
-
-      const userGuess = userEnterGuess.trim().toLowerCase();
-
-      if (userGuess === '' || !findResultArray(userGuess, oddEven)) {
-        return computerPlay();
-      }
-
-      if (userGuess === getResultNumberOddEven(computerBalls) ||
-      getResultNumberOddEven(computerBalls).startsWith(userGuess)) {
-        marbles.player += computerBalls;
+      if (userEnterGuess === computerResultOddEven) {
+        computerBalls = getNumber(marbles.bot, computerBalls);
         marbles.bot -= computerBalls;
+        marbles.player += computerBalls;
         alert(`Вы забираете у бота шариков: ${computerBalls} \n` +
           `Общее кол-во шариков: \n У вас шариков: ${marbles.player}\n` +
           `У бота шариков: ${marbles.bot}`);
       } else {
+        computerBalls = getNumber(marbles.player, computerBalls);
         marbles.player -= computerBalls;
         marbles.bot += computerBalls;
         alert(`Бот забирает у вас шариков: ${computerBalls} \n` +
           `Общее кол-во шариков: \n У вас шариков: ${marbles.player}\n` +
           `У бота шариков: ${marbles.bot}`);
       }
-
-      /* if (marbles.player <= 0) {
-        return winComputer();
-      } else if (marbles.bot <= 0) {
-        return winUser();
-      } else {
-        return userPlay();
-      } */
 
       getResultWin(marbles, userPlay);
     };
@@ -176,14 +136,14 @@
       }
     }
 
-    if (userEnter.trim() === '' || !findResultArray(userEnter, figures)) {
+    if (userEnter.trim() === '' || !findResultArray(userEnter)) {
       return start();
     }
 
     const computerChoice = figures[getRandomIntInclusive(0,
         figures.length - 1)];
     console.log('computerChoice: ', computerChoice);
-    const userChoice = findResultArray(userEnter, figures);
+    const userChoice = findResultArray(userEnter);
     const userIndex = figures.indexOf(userChoice);
     const computerIndex = figures.indexOf(computerChoice);
 
